@@ -1,23 +1,19 @@
 const mongoose = require("mongoose");
 // Modèle Étudiant
-const studentSchema = new mongoose.Schema({
-  photo: { type: String },
-  name: { type: String, required: true },
-  first_name: { type: String, required: true },
-  gender: { type: String, required: true },
-  date_of_birth: { type: String, required: true },
-  classe: { type: mongoose.Schema.Types.ObjectId, ref: "Class" }, // Relation avec la classe
-  address: { type: String, required: true },
-  phone: { type: String },
-  mail: { type: String },
-  school_level: { type: String },
-  mother_name: { type: String, required: true },
-  mother_occupation: { type: String, required: true },
-  mother_phone: { type: String, required: true },
-  father_name: { type: String, required: true },
-  father_occupation: { type: String, required: true },
-  father_phone: { type: String, required: true },
-  submission: { type: String, required: true },
-});
+const studentSchema = new mongoose.Schema(
+  {
+    profilePhoto: { type: String, require: true },
+    last_name: { type: String, required: true, trim: true },
+    first_name: { type: String, required: true, trim: true },
+    date_of_birth: { type: String, required: true },
+    current_address: { type: String, required: true, trim: true },
+    last_degree: { type: String, required: true }, // URL du fichier PDF
+    residence_certificate: { type: String, required: true }, // URL du fichier PDF
+    transcript: { type: String }, // URL du fichier PDF
+    email: { type: String, required: true },
+    phone_number: { type: String, required: true },
+  },
+  { timestamps: true } // Ajoute createdAt & updatedAt automatiquement);
+);
 const Student = mongoose.model("Student", studentSchema);
 module.exports = Student;

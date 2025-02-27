@@ -1,6 +1,6 @@
 const Class = require("../models/classModel");
 async function postClass(req, res) {
-  const { level, subject } = req.body;
+  const { level } = req.body;
   try {
     const classeExist = await Class.findOne({ level });
     if (classeExist) {
@@ -9,7 +9,6 @@ async function postClass(req, res) {
     //create classe
     const classe = await new Class({
       level,
-      subject,
     });
     await classe.save();
     res.status(201).json({
@@ -45,13 +44,13 @@ async function getAllClass(req, res) {
 }
 async function updateClass(req, res) {
   const id = req.params.id;
-  const { level, subject } = req.body;
+  const { level } = req.body;
 
   const query = { _id: id };
   try {
     await Class.findByIdAndUpdate(
       query,
-      { level, subject },
+      { level },
       { new: true, runValidators: true }
     );
   } catch (err) {

@@ -12,6 +12,16 @@ const studentSchema = new mongoose.Schema(
     transcript: { type: String }, // URL du fichier PDF
     email: { type: String, required: true },
     phone_number: { type: String, required: true },
+    classe: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Class",
+      required: true,
+    }, // Relation avec la classe
+    course: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      required: true,
+    }, // Relation avec la cours
   },
   { timestamps: true } // Ajoute createdAt & updatedAt automatiquement);
 );

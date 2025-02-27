@@ -1,34 +1,7 @@
 const Student = require("../models/studentModel");
 const Class = require("../models/classModel");
-const multer = require("multer");
-const sharp = require("sharp");
 const path = require("path");
 const fs = require("fs").promises;
-
-const multerStorage = multer.memoryStorage();
-const upload = multer({ storage: multerStorage, fileFilter: multerFitler });
-const uploadStudentPhoto = upload.single("photo");
-
-function multerFitler(req, file, cb) {
-  if (file.mimetype.startsWith("image")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Not image, please upload only image"), false);
-  }
-}
-
-function resizeStudentPhoto(req, res, next) {
-  if (!req.file) return next();
-  req.file.filename = `student-${Date.now()}.jpeg`;
-
-  sharp(req.file.buffer)
-    .resize(500, 500)
-    .toFormat("jpeg")
-    .jpeg({ quality: 90 })
-    .toFile(`public/img/students/${req.file.filename}`);
-
-  next();
-}
 
 async function postStudent(req, res) {
   let photoStudent = "default.png";
@@ -264,7 +237,5 @@ module.exports = {
   deleteStudent,
   getAllStudent,
   updateStudent,
-  uploadStudentPhoto,
-  resizeStudentPhoto,
   getStudentById,
 };

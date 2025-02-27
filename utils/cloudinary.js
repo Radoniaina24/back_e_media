@@ -23,6 +23,6 @@ const storage = new CloudinaryStorage({
 });
 
 const upload = multer({ storage });
-const uploadPanelistPhoto = upload.single("photo");
+const uploadStudentPhoto = upload.single("photo");
 
-module.exports = uploadPanelistPhoto;
+module.exports = uploadStudentPhoto;

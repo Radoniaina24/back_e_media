@@ -12,17 +12,49 @@ cloudinary.config({
 
 // Configuration de Multer avec stockage Cloudinary
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "student_e_media", // Dossier dans Cloudinary
-    format: async (req, file) => "png", // Format d'image (peut être jpg, webp, etc.)
-    public_id: (req, file) => {
-      file.originalname.split(".")[0];
-    }, // Garde le même nom de fichier (sans extension)
+  cloudinary,
+  params: async (req, file) => {
+    // Extraire le nom original du fichier sans l'extension
+    const originalName = file.originalname
+      .split(".")
+      .slice(0, -1)
+      .join("_")
+      .replace(/\s+/g, "_");
+
+    // Récupérer la date du jour (format YYYYMMDD)
+    const currentDate = new Date()
+      .toISOString()
+      .split("T")[0]
+      .replace(/-/g, "");
+
+    const isImage = file.mimetype.startsWith("image/");
+    const isPdf = file.mimetype === "application/pdf";
+
+    let options = {
+      folder: isImage ? "profil_student" : "pdfs_student",
+      public_id: `${originalName}_${currentDate}`,
+    };
+
+    if (isImage) {
+      options.format = "jpg"; // Convertit toutes les images en JPG
+    } else if (isPdf) {
+      options.resource_type = "raw"; // Définit les PDFs comme fichiers bruts
+      options.format = "pdf"; // Supprime l'attribut format pour les PDFs
+    }
+    return options;
   },
 });
 
-const upload = multer({ storage });
+// Initialisation de l'upload avec multer
+const upload = multer({ storage: storage });
 const uploadStudentPhoto = upload.single("photo");
-
-module.exports = uploadStudentPhoto;
+const uploadFileStudent = upload.fields([
+  { name: "profilePhoto", maxCount: 1 },
+  { name: "last_degree", maxCount: 1 },
+  { name: "residence_certificate", maxCount: 1 },
+  { name: "transcript", maxCount: 1 },
+]);
+module.exports = {
+  uploadStudentPhoto,
+  uploadFileStudent,
+};

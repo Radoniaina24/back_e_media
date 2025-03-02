@@ -1,59 +1,64 @@
 const Student = require("../models/studentModel");
 const Class = require("../models/classModel");
 const path = require("path");
+const Course = require("../models/courseModel");
 const fs = require("fs").promises;
 
 async function postStudent(req, res) {
-  let photoStudent = "default.png";
-  if (req.file) {
-    photoStudent = req.file.filename;
+  if (!req.files) {
+    return res
+      .status(400)
+      .json({ message: "Veuillez télécharger les fichiers requis." });
   }
+
+  const uploadedFiles = {};
+  Object.keys(req.files).forEach((key) => {
+    uploadedFiles[key] = {
+      url: req.files[key][0].path,
+      publicId: req.files[key][0].filename,
+      type: req.files[key][0].mimetype.startsWith("image/") ? "image" : "pdf",
+    };
+  });
   const {
-    name,
+    last_name,
     first_name,
-    gender,
     date_of_birth,
+    current_address,
+    email,
+    phone_number,
     classe,
-    address,
-    phone,
-    mail,
-    mother_name,
-    mother_occupation,
-    mother_phone,
-    father_name,
-    father_occupation,
-    father_phone,
-    submission,
+    course,
   } = req.body;
 
   try {
     const classFound = await Class.findOne({ level: classe });
     if (!classFound) {
-      throw new Error("La classe n'existe pas");
+      throw new Error("The class does not exist.");
+    }
+    const courseFound = await Course.findOne({ level: course });
+    if (!courseFound) {
+      throw new Error("The course does not exist");
     }
 
-    const studentExist = await Student.findOne({ first_name });
+    const studentExist = await Student.findOne({ email });
     if (studentExist) {
       throw new Error("Student already exist");
     }
     //create student
     const student = await new Student({
-      photo: photoStudent,
-      name,
+      last_name,
       first_name,
-      gender,
       date_of_birth,
-      address,
-      phone,
-      mail,
-      mother_name,
-      mother_occupation,
-      mother_phone,
-      father_name,
-      father_occupation,
-      father_phone,
-      submission,
+      current_address,
+      email,
+      phone_number,
       classe: classFound._id,
+      course: courseFound._id,
+      //fichier image et pdf
+      profilePhoto: uploadedFiles.profilePhoto,
+      last_degree: uploadedFiles.last_degree,
+      residence_certificate: uploadedFiles.residence_certificate,
+      transcript: uploadedFiles.transcript,
     });
     await student.save();
     res.status(201).json({

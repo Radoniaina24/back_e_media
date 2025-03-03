@@ -52,11 +52,14 @@ async function login(req, res) {
       sameSite: "Strict", // Pour éviter l'envoi du cookie dans des contextes cross-site
       maxAge: 3600000, // 1 heure
     });
+    const userObj = userFound.toObject();
+    ["password", "refreshToken", "email"].forEach((key) => delete userObj[key]);
 
     res.json({
       status: "success",
       message: "User logged in successfully",
       token,
+      user: userObj,
     });
   } else {
     throw new Error("Invalid login credentials");

@@ -29,11 +29,11 @@ async function getOneUser(req, res) {
 }
 async function updateUser(req, res) {
   const uid = req.params.uid;
-  const { fullname, email } = req.body;
+  const { username, email, password, role } = req.body;
 
   const query = { _id: uid };
   try {
-    await User.findOneAndUpdate(query, { fullname, email });
+    await User.findOneAndUpdate(query, { username, email, password, role });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

@@ -9,8 +9,8 @@ userRoutes.get("/:uid", userContollers.getOneUser);
 userRoutes.post("/register", asyncHandler(userContollers.postUser));
 userRoutes.put(
   "/update/:uid",
-  isLoggedIn,
+  // isLoggedIn,
   asyncHandler(userContollers.updateUser)
 );
-userRoutes.delete("/delete/:uid", isLoggedIn, userContollers.deleteUser);
+userRoutes.delete("/delete/:uid", userContollers.deleteUser);
 module.exports = userRoutes;

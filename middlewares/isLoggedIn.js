@@ -5,9 +5,11 @@ const verifyToken = require("../utils/verifyToken");
 async function isLoggedIn(req, res, next) {
   //recuperation du token
   const token = getTokenFromHeader(req);
+  console.log("Token reçu côté serveur :", token);
   try {
     // Décodage et vérification du token
     const decoded = verifyToken(token);
+    console.log("Token reçu decodé :", decoded.id);
     // Récupérer l'utilisateur correspondant et exclure le mot de passe
     const user = await User.findById(decoded.id).select("-password");
 

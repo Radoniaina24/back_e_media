@@ -3,15 +3,29 @@ const bcrypt = require("bcrypt");
 const { generateToken } = require("../utils/generateToken");
 
 async function getAllUser(req, res) {
+  // n'oublie pas de mettre des filtre par date
+  const { page = 1, limit = 10, search } = req.query;
   try {
-    const users = await User.find();
-    const totale = await User.countDocuments();
+    const searchQuery = {};
+    if (search) {
+      searchQuery.$or = [
+        { username: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+    const allUsers = await User.countDocuments();
+    const tolaleUsers = await User.countDocuments(searchQuery);
+    const totalPages = Math.ceil(tolaleUsers / limit);
+    const users = await User.find(searchQuery)
+      .skip((page - 1) * limit)
+      .limit(limit);
     res.status(200).json({
       status: "success",
       message: "Users fetched successfully",
-      totale,
-      results: users.length,
+      totale: tolaleUsers,
+      totalPages,
       users,
+      allUsers,
     });
   } catch (error) {
     res.status(400).json({ message: error.message });

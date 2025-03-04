@@ -5,23 +5,18 @@ const verifyToken = require("../utils/verifyToken");
 async function isLoggedIn(req, res, next) {
   //recuperation du token
   const token = getTokenFromHeader(req);
-  console.log("Token reçu côté serveur :", token);
   try {
     // Décodage et vérification du token
     const decoded = verifyToken(token);
-    console.log("Token reçu decodé :", decoded.id);
     // Récupérer l'utilisateur correspondant et exclure le mot de passe
     const user = await User.findById(decoded.id).select("-password");
-
     if (!user) {
-      res.status(404);
-      throw new Error("Utilisateur non trouvé");
+      return res.status(403).json({ message: "User not found" });
     }
-
     req.user = user; // Injecter les données utilisateur dans la requête
     next();
   } catch (error) {
-    throw new Error("Invalid or expired token, please logged in again");
+    return res.status(500).json({ message: "Accès non autorisé" });
   }
 }
 module.exports = isLoggedIn;

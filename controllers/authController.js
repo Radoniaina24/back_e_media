@@ -59,7 +59,7 @@ async function login(req, res) {
       status: "success",
       message: "User logged in successfully",
       token,
-      user: userObj,
+      // user: userObj,
     });
   } else {
     throw new Error("Invalid login credentials");

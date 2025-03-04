@@ -71,6 +71,7 @@ async function getMe(req, res) {
     return res.status(401).json({ message: "Utilisateur non authentifié." });
   }
   const user = req.user; // Injecté par le middleware `isLoggedIn`
+  // console.log("user", user);
   res.status(200).json({
     id: user._id,
     username: user.username,
@@ -78,6 +79,7 @@ async function getMe(req, res) {
     role: user.role,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    token: user.refreshToken,
   });
 }
 

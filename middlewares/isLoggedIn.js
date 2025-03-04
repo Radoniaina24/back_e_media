@@ -3,11 +3,15 @@ const getTokenFromHeader = require("../utils/getTokenFromHeader");
 const verifyToken = require("../utils/verifyToken");
 
 async function isLoggedIn(req, res, next) {
+  // recuperation du token from cookies
+  const tokenCookies = req.cookies.refreshToken;
+
   //recuperation du token
-  const token = getTokenFromHeader(req);
+  // const token = getTokenFromHeader(req);
+  // console.log("token :", tokenCookies);
   try {
     // Décodage et vérification du token
-    const decoded = verifyToken(token);
+    const decoded = verifyToken(tokenCookies);
     // Récupérer l'utilisateur correspondant et exclure le mot de passe
     const user = await User.findById(decoded.id).select("-password");
     if (!user) {

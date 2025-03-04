@@ -7,8 +7,18 @@ const checkRole = require("../utils/checkRole");
 
 userRoutes.get("/", asyncHandler(userContollers.getAllUser));
 userRoutes.get("/:uid", userContollers.getOneUser);
-userRoutes.post("/register", asyncHandler(userContollers.postUser));
-userRoutes.put("/update/:uid", asyncHandler(userContollers.updateUser));
+userRoutes.post(
+  "/register",
+  isLoggedIn,
+  checkRole(["admin"]),
+  asyncHandler(userContollers.postUser)
+);
+userRoutes.put(
+  "/update/:uid",
+  isLoggedIn,
+  checkRole(["admin"]),
+  asyncHandler(userContollers.updateUser)
+);
 userRoutes.delete(
   "/delete/:uid",
   isLoggedIn,

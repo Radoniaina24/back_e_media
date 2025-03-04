@@ -44,14 +44,21 @@ async function getOneUser(req, res) {
 async function updateUser(req, res) {
   const uid = req.params.uid;
   const { username, email, password, role } = req.body;
-
   const query = { _id: uid };
   try {
-    await User.findOneAndUpdate(query, { username, email, password, role });
+    //hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+    await User.findOneAndUpdate(query, {
+      username,
+      email,
+      password: hashPassword,
+      role,
+    });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
-  res.status(200).json({ message: "L'utilisateur est à jour avec success" });
+  res.status(200).json({ message: "User is up to date with success" });
 }
 async function deleteUser(req, res) {
   const uid = req.params.uid;

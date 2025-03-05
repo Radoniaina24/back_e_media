@@ -125,6 +125,7 @@ async function getAllStudent(req, res) {
     const tolaleStudents = await Student.countDocuments(searchQuery);
     const totalPages = Math.ceil(tolaleStudents / limit);
     const students = await Student.find(searchQuery)
+      .populate("course")
       .populate("classe")
       .skip((page - 1) * limit)
       .limit(limit);
@@ -143,93 +144,78 @@ async function getAllStudent(req, res) {
 }
 async function updateStudent(req, res) {
   const id = req.params.id;
-  let photoStudent = "";
-  if (req.file) {
-    photoStudent = req.file.filename;
+  if (!req.files) {
+    return res
+      .status(400)
+      .json({ message: "Veuillez télécharger les fichiers requis." });
   }
-  const {
-    name,
-    first_name,
-    gender,
-    date_of_birth,
-    classe,
-    address,
-    phone,
-    mail,
-    mother_name,
-    mother_occupation,
-    mother_phone,
-    father_name,
-    father_occupation,
-    father_phone,
-    submission,
-  } = req.body;
+  const uploadedFiles = {};
+  Object.keys(req.files).forEach((key) => {
+    uploadedFiles[key] = {
+      url: req.files[key][0].path,
+      publicId: req.files[key][0].filename,
+      type: req.files[key][0].mimetype.startsWith("image/") ? "image" : "pdf",
+    };
+  });
 
+  const {
+    last_name,
+    first_name,
+    date_of_birth,
+    current_address,
+    email,
+    phone_number,
+    classe,
+    course,
+  } = req.body;
+  console.log(last_name);
   const query = { _id: id };
+  console.log(id);
   try {
     const classFound = await Class.findOne({ level: classe });
     if (!classFound) {
-      throw new Error("La classe n'existe pas");
+      throw new Error("The class does not exist.");
+    }
+    const courseFound = await Course.findOne({ level: course });
+    if (!courseFound) {
+      throw new Error("The course does not exist");
     }
 
     // Récupérer l'étudiant actuel
     const student = await Student.findById(id);
     if (!student) {
-      return res.status(404).json({ message: "Étudiant introuvable" });
+      return res.status(404).json({ message: "Student already exist" });
     }
-    // Si une nouvelle photo est envoyée
-    if (req.file) {
-      photoStudent = req.file.filename; // Attribuer le nom de la nouvelle photo
-      // Supprimer l'ancienne photo si elle n'est pas la photo par défaut
-      if (student.photo && student.photo !== "default.png") {
-        const oldPhotoPath = path.join(
-          __dirname,
-          "../public/img/students",
-          student.photo
-        );
-        fs.unlink(oldPhotoPath, (err) => {
-          if (err) {
-            console.error(
-              "Erreur lors de la suppression de l'ancienne photo:",
-              err
-            );
-          }
-        });
-      }
-    } else {
-      // Si aucune nouvelle photo n'est envoyée, garder l'ancienne photo
-      photoStudent = student.photo;
-    }
+
     await Student.findByIdAndUpdate(
       query,
       {
-        photo: photoStudent,
-        name,
+        last_name,
         first_name,
-        gender,
         date_of_birth,
+        current_address,
+        email,
+        phone_number,
         classe: classFound._id,
-        address,
-        phone,
-        mail,
-        mother_name,
-        mother_occupation,
-        mother_phone,
-        father_name,
-        father_occupation,
-        father_phone,
-        submission,
+        course: courseFound._id,
+        //fichier image et pdf
+        profilePhoto: uploadedFiles.profilePhoto,
+        last_degree: uploadedFiles.last_degree,
+        residence_certificate: uploadedFiles.residence_certificate,
+        transcript: uploadedFiles.transcript,
       },
       { new: true, runValidators: true }
     );
   } catch (err) {
     res.status(400).json({ message: err?.message });
   }
-  res.status(200).json({ message: "La student est à jour avec success" });
+  res.status(200).json({ message: " student  update successfully" });
 }
 async function getStudentById(req, res) {
   const id = req.params.id;
-  const student = await Student.findById(id).populate("classe");
+  const student = await Student.findById(id)
+    .populate("classe")
+    .populate("course");
   if (!student) throw new Error("Student not found");
   res.json({
     status: "success",

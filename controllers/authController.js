@@ -49,8 +49,8 @@ async function login(req, res) {
       httpOnly: true, // Le cookie ne peut pas être accédé via JavaScript
       secure: process.env.NODE_ENV === "production", // Utiliser HTTPS en production
       sameSite: "Strict", // Pour éviter l'envoi du cookie dans des contextes cross-site
-      // maxAge: 3600000, // 1 heure
-      maxAge: 120000,
+      maxAge: 3600000, // 1 heure
+      // maxAge: 120000,
     });
     // const userObj = userFound.toObject();
     // ["password", "refreshToken", "email"].forEach((key) => delete userObj[key]);

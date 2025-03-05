@@ -11,7 +11,11 @@ studentRoutes.post(
   uploadFileStudent,
   asyncHandler(studentContollers.postStudent)
 );
-studentRoutes.put("/update/:id", asyncHandler(studentContollers.updateStudent));
+studentRoutes.put(
+  "/update/:id",
+  uploadFileStudent,
+  asyncHandler(studentContollers.updateStudent)
+);
 studentRoutes.delete(
   "/delete/:id",
   asyncHandler(studentContollers.deleteStudent)

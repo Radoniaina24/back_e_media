@@ -3,21 +3,23 @@ const getTokenFromHeader = require("../utils/getTokenFromHeader");
 const verifyToken = require("../utils/verifyToken");
 
 async function isLoggedIn(req, res, next) {
-  // recuperation du token from cookies
-  const tokenCookies = req.cookies.refreshToken;
-
   //recuperation du token
   // const token = getTokenFromHeader(req);
   // console.log("token :", tokenCookies);
   try {
-    // Décodage et vérification du token
-    const decoded = verifyToken(tokenCookies);
-    // Récupérer l'utilisateur correspondant et exclure le mot de passe
-    const user = await User.findById(decoded.id).select("-password");
-    if (!user) {
-      return res.status(403).json({ message: "User not found" });
+    const token = req.cookies.refreshToken; // Récupération du token via le cookie sécurisé
+    if (!token) {
+      return res.status(401).json({ message: "Accès refusé, token manquant" });
     }
-    req.user = user; // Injecter les données utilisateur dans la requête
+
+    const decoded = verifyToken(token);
+    const user = await User.findById(decoded.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+
+    req.user = user;
     next();
   } catch (error) {
     return res.status(500).json({ message: "Accès non autorisé" });

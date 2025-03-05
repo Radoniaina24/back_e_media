@@ -39,7 +39,6 @@ async function registerUser(req, res) {
 async function login(req, res) {
   const { email, password } = req.body;
   const userFound = await User.findOne({ email });
-
   if (userFound && (await bcrypt.compare(password, userFound?.password))) {
     const token = generateToken(userFound?._id);
     const refreshToken = generateRefreshToken(userFound?._id);
@@ -50,16 +49,15 @@ async function login(req, res) {
       httpOnly: true, // Le cookie ne peut pas être accédé via JavaScript
       secure: process.env.NODE_ENV === "production", // Utiliser HTTPS en production
       sameSite: "Strict", // Pour éviter l'envoi du cookie dans des contextes cross-site
-      maxAge: 3600000, // 1 heure
+      // maxAge: 3600000, // 1 heure
+      maxAge: 120000,
     });
-    const userObj = userFound.toObject();
-    ["password", "refreshToken", "email"].forEach((key) => delete userObj[key]);
+    // const userObj = userFound.toObject();
+    // ["password", "refreshToken", "email"].forEach((key) => delete userObj[key]);
 
     res.json({
       status: "success",
       message: "User logged in successfully",
-      token,
-      // user: userObj,
     });
   } else {
     throw new Error("Invalid login credentials");
@@ -84,6 +82,11 @@ async function getMe(req, res) {
 }
 
 async function logout(req, res) {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production", // Utiliser HTTPS en production
+    sameSite: "Strict", // Pour éviter le CSRF
+  });
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production", // Utiliser HTTPS en production
@@ -93,21 +96,21 @@ async function logout(req, res) {
 }
 
 async function refreshAccessToken(req, res) {
-  const { refreshToken } = req.cookies;
-  if (!refreshToken) return res.status(401).json({ message: "Non autorisé." });
-
   try {
-    const payload = verifyToken(refreshToken);
-    if (!payload) return res.status(401).json({ message: "Non autorisé." });
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.status(403).json({ message: "Non autorisé" });
 
-    const user = await User.findById(payload.id);
-    if (!user || user.refreshToken !== refreshToken)
-      return res.status(403).json({ message: "Accès interdit." });
-
-    const newAccessToken = generateToken(user._id);
-    res.json({ accessToken: newAccessToken });
+    const decoded = verifyToken(refreshToken);
+    const newAccessToken = generateRefreshToken(decoded.id);
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 15 * 60 * 1000,
+    });
+    res.status(200).json({ message: "Token rafraîchi avec succès" });
   } catch (error) {
-    res.status(500).json({ message: "Erreur serveur." });
+    return res.status(403).json({ message: "Token invalide ou expiré" });
   }
 }
 
